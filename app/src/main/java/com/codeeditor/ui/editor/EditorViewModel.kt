@@ -1,5 +1,6 @@
 package com.codeeditor.ui.editor
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.codeeditor.data.model.FileNode
@@ -13,10 +14,13 @@ import javax.inject.Inject
 @HiltViewModel
 class EditorViewModel @Inject constructor(
     private val fileRepository: FileRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val files = fileRepository.allFiles.stateIn(
+    val workspaceId: String = savedStateHandle.get<String>("workspaceId") ?: "1"
+
+    val files = fileRepository.getFilesByParentId(workspaceId).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         emptyList()
@@ -86,6 +90,7 @@ class EditorViewModel @Inject constructor(
             val newFile = FileNode(
                 name = name,
                 isDirectory = false,
+                parentId = workspaceId,
                 language = extension,
                 content = ""
             )

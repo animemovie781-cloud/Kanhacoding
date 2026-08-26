@@ -9,6 +9,12 @@ interface FileDao {
     @Query("SELECT * FROM files ORDER BY isDirectory DESC, name ASC")
     fun getAllFiles(): Flow<List<FileNode>>
 
+    @Query("SELECT * FROM files WHERE parentId = :parentId ORDER BY isDirectory DESC, name ASC")
+    fun getFilesByParentId(parentId: String): Flow<List<FileNode>>
+
+    @Query("SELECT * FROM files WHERE isDirectory = 1 AND parentId IS NULL ORDER BY updatedAt DESC")
+    fun getWorkspaces(): Flow<List<FileNode>>
+
     @Query("SELECT * FROM files WHERE id = :id LIMIT 1")
     suspend fun getFileById(id: String): FileNode?
 

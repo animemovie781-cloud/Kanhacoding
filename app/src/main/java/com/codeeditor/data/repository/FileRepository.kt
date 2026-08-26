@@ -12,6 +12,8 @@ class FileRepository @Inject constructor(
     private val fileDao: FileDao
 ) {
     val allFiles: Flow<List<FileNode>> = fileDao.getAllFiles()
+    val workspaces: Flow<List<FileNode>> = fileDao.getWorkspaces()
+    fun getFilesByParentId(parentId: String) = fileDao.getFilesByParentId(parentId)
 
     suspend fun getFileById(id: String): FileNode? = fileDao.getFileById(id)
 
@@ -22,9 +24,9 @@ class FileRepository @Inject constructor(
     suspend fun deleteFile(id: String) = fileDao.deleteFile(id)
 
     suspend fun initDefaultFilesIfEmpty() {
-        val current = allFiles.first()
+        val current = workspaces.first()
         if (current.isEmpty()) {
-            val rootSrc = FileNode(id = "1", name = "src", isDirectory = true, parentId = null)
+            val rootSrc = FileNode(id = "1", name = "My Project", isDirectory = true, parentId = null)
             val sampleApp = FileNode(
                 id = "2",
                 name = "Main.kt",
@@ -37,7 +39,7 @@ class FileRepository @Inject constructor(
                 id = "3",
                 name = "README.md",
                 isDirectory = false,
-                parentId = null,
+                parentId = "1",
                 language = "markdown",
                 content = "# CodeEditor AI (Android)\n\nLocal-first general purpose code editor + AI assistant app built with Jetpack Compose & Kotlin.\n"
             )

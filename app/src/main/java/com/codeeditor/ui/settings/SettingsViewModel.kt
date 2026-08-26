@@ -6,6 +6,7 @@ import com.codeeditor.data.model.EditorSettings
 import com.codeeditor.data.repository.SettingsRepository
 import com.codeeditor.network.AIApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -23,6 +24,22 @@ class SettingsViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         EditorSettings()
     )
+
+    val connectionStatus = MutableStateFlow<String?>(null)
+
+    fun checkConnection() {
+        viewModelScope.launch {
+            connectionStatus.value = "Checking..."
+            val currentSettings = settings.value
+            val models = aiApiService.fetchModels(currentSettings.baseUrl, currentSettings.apiKey)
+            if (models.isNotEmpty()) {
+                connectionStatus.value = "Success! Found ${models.size} models."
+                updateSettings { it.copy(availableModels = models) }
+            } else {
+                connectionStatus.value = "Failed to fetch models."
+            }
+        }
+    }
 
     fun updateSettings(transform: (EditorSettings) -> EditorSettings) {
         viewModelScope.launch {

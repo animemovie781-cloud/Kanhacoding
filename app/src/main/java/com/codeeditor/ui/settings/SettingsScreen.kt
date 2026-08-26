@@ -90,6 +90,24 @@ fun SettingsScreen(
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
 
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { viewModel.checkConnection() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Check Models", color = Color.White)
+                }
+            }
+            val status by viewModel.connectionStatus.collectAsState()
+            if (status != null) {
+                Text(
+                    text = status!!,
+                    color = if (status!!.startsWith("Success")) Color(0xFF10B981) else Color(0xFFEF4444),
+                    fontSize = 13.sp
+                )
+            }
+
             OutlinedTextField(
                 value = settings.apiKey,
                 onValueChange = { newKey -> viewModel.updateSettings { it.copy(apiKey = newKey) } },

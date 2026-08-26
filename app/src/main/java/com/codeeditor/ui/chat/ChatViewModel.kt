@@ -140,4 +140,10 @@ class ChatViewModel @Inject constructor(
         streamJob?.cancel()
         _isStreaming.value = false
     }
+
+    fun updateModel(newModel: String) {
+        viewModelScope.launch {
+            settingsRepository.updateSettings { it.copy(model = newModel) }
+        }
+    }
 }

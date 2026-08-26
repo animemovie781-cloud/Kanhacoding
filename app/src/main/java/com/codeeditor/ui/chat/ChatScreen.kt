@@ -33,6 +33,8 @@ fun ChatScreen(
     val messages by viewModel.messages.collectAsState()
     val isStreaming by viewModel.isStreaming.collectAsState()
     val error by viewModel.error.collectAsState()
+    val settings by viewModel.settings.collectAsState()
+    var expandedDropdown by remember { mutableStateOf(false) }
 
     LaunchedEffect(messages.size, isStreaming) {
         if (messages.isNotEmpty()) {
@@ -63,13 +65,50 @@ fun ChatScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AI Assistant (OmniRoute/OpenAI)", color = Color.White, fontSize = 16.sp) },
+                    title = {
+                        Column {
+                            Text("AI Assistant", color = Color.White, fontSize = 16.sp)
+                            Text(settings.model, color = Color.Gray, fontSize = 12.sp)
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                     },
                     actions = {
+                        Box {
+                            TextButton(onClick = { expandedDropdown = true }) {
+                                Text("Model", color = Color(0xFF60A5FA))
+                            }
+                            DropdownMenu(
+                                expanded = expandedDropdown,
+                                onDismissRequest = { expandedDropdown = false },
+                                modifier = Modifier.background(Color(0xFF252526))
+                            ) {
+                                if (settings.availableModels.isEmpty()) {
+                                    DropdownMenuItem(
+                                        text = { Text("No models fetched (Check Settings)", color = Color.Gray) },
+                                        onClick = { expandedDropdown = false }
+                                    )
+                                } else {
+                                    settings.availableModels.forEach { model ->
+                                        DropdownMenuItem(
+                                            text = { 
+                                                Text(
+                                                    text = model, 
+                                                    color = if (model == settings.model) Color(0xFF60A5FA) else Color.White
+                                                ) 
+                                            },
+                                            onClick = {
+                                                viewModel.updateModel(model)
+                                                expandedDropdown = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(imageVector = Icons.Default.Menu, contentDescription = "History", tint = Color.White)
                         }

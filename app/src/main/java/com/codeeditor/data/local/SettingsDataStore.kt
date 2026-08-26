@@ -24,11 +24,15 @@ class SettingsDataStore @Inject constructor(
         val BASE_URL = stringPreferencesKey("base_url")
         val API_KEY = stringPreferencesKey("api_key")
         val MODEL = stringPreferencesKey("model")
+        val AVAILABLE_MODELS = stringPreferencesKey("available_models")
         val TEMPERATURE = floatPreferencesKey("temperature")
         val SYSTEM_PROMPT = stringPreferencesKey("system_prompt")
     }
 
     val settings: Flow<EditorSettings> = context.dataStore.data.map { prefs ->
+        val modelsStr = prefs[Keys.AVAILABLE_MODELS] ?: ""
+        val modelsList = if (modelsStr.isNotEmpty()) modelsStr.split(",") else emptyList()
+        
         EditorSettings(
             theme = prefs[Keys.THEME] ?: "dark",
             fontSize = prefs[Keys.FONT_SIZE] ?: 14,
@@ -38,6 +42,7 @@ class SettingsDataStore @Inject constructor(
             baseUrl = prefs[Keys.BASE_URL] ?: "http://localhost:20128/v1",
             apiKey = prefs[Keys.API_KEY] ?: "",
             model = prefs[Keys.MODEL] ?: "omniroute/auto",
+            availableModels = modelsList,
             temperature = prefs[Keys.TEMPERATURE] ?: 0.7f,
             systemPrompt = prefs[Keys.SYSTEM_PROMPT] ?: "You are a coding assistant inside a code editor. Help write, debug, and explain code."
         )
@@ -45,6 +50,9 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun updateSettings(transform: (EditorSettings) -> EditorSettings) {
         context.dataStore.edit { prefs ->
+            val modelsStr = prefs[Keys.AVAILABLE_MODELS] ?: ""
+            val modelsList = if (modelsStr.isNotEmpty()) modelsStr.split(",") else emptyList()
+
             val current = EditorSettings(
                 theme = prefs[Keys.THEME] ?: "dark",
                 fontSize = prefs[Keys.FONT_SIZE] ?: 14,
@@ -54,6 +62,7 @@ class SettingsDataStore @Inject constructor(
                 baseUrl = prefs[Keys.BASE_URL] ?: "http://localhost:20128/v1",
                 apiKey = prefs[Keys.API_KEY] ?: "",
                 model = prefs[Keys.MODEL] ?: "omniroute/auto",
+                availableModels = modelsList,
                 temperature = prefs[Keys.TEMPERATURE] ?: 0.7f,
                 systemPrompt = prefs[Keys.SYSTEM_PROMPT] ?: "You are a coding assistant inside a code editor. Help write, debug, and explain code."
             )
@@ -66,6 +75,7 @@ class SettingsDataStore @Inject constructor(
             prefs[Keys.BASE_URL] = updated.baseUrl
             prefs[Keys.API_KEY] = updated.apiKey
             prefs[Keys.MODEL] = updated.model
+            prefs[Keys.AVAILABLE_MODELS] = updated.availableModels.joinToString(",")
             prefs[Keys.TEMPERATURE] = updated.temperature
             prefs[Keys.SYSTEM_PROMPT] = updated.systemPrompt
         }

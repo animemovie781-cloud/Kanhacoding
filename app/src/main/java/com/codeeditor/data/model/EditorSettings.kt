@@ -9,6 +9,7 @@ data class EditorSettings(
     val baseUrl: String = "http://localhost:20128/v1", // OmniRoute Local Default
     val apiKey: String = "",
     val model: String = "omniroute/auto",
+    val availableModels: List<String> = emptyList(),
     val temperature: Float = 0.7f,
     val systemPrompt: String = "You are a coding assistant inside a code editor. Help write, debug, and explain code."
 )

@@ -84,29 +84,47 @@ class AIApiService @Inject constructor() {
     }.flowOn(Dispatchers.IO)
 
     suspend fun fetchModels(baseUrl: String, apiKey: String): List<String> {
-        return try {
-            val cleanBaseUrl = baseUrl.trimEnd('/')
-            val url = "$cleanBaseUrl/models"
-            val requestBuilder = Request.Builder().url(url).get()
-            if (apiKey.isNotBlank()) {
-                requestBuilder.header("Authorization", "Bearer $apiKey")
-            }
-            val response = client.newCall(requestBuilder.build()).execute()
-            if (response.isSuccessful) {
-                val jsonStr = response.body?.string() ?: ""
-                val json = JSONObject(jsonStr)
-                val data = json.optJSONArray("data")
-                val list = mutableListOf<String>()
-                if (data != null) {
-                    for (i in 0 until data.length()) {
-                        val item = data.getJSONObject(i)
-                        list.add(item.getString("id"))
-                    }
-                }
-                list
-            } else emptyList()
-        } catch (e: Exception) {
-            emptyList()
+        val cleanBaseUrl = baseUrl.trimEnd('/')
+        val url = "$cleanBaseUrl/models"
+        val requestBuilder = Request.Builder().url(url).get()
+        if (apiKey.isNotBlank()) {
+            requestBuilder.header("Authorization", "Bearer $apiKey")
         }
+        val response = client.newCall(requestBuilder.build()).execute()
+        
+        if (!response.isSuccessful) {
+            val errBody = response.body?.string() ?: ""
+            throw Exception("HTTP ${response.code}: $errBody")
+        }
+        
+        val jsonStr = response.body?.string() ?: ""
+        val list = mutableListOf<String>()
+        
+        try {
+            val json = JSONObject(jsonStr)
+            val data = json.optJSONArray("data")
+            if (data != null) {
+                for (i in 0 until data.length()) {
+                    val item = data.getJSONObject(i)
+                    list.add(item.getString("id"))
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback for simple arrays if some endpoints return [ { "id": "..." } ] directly
+            try {
+                val array = JSONArray(jsonStr)
+                for (i in 0 until array.length()) {
+                    val item = array.getJSONObject(i)
+                    list.add(item.getString("id"))
+                }
+            } catch (e2: Exception) {
+                throw Exception("Failed to parse models JSON response")
+            }
+        }
+        
+        if (list.isEmpty()) {
+            throw Exception("No models found in the response")
+        }
+        return list
     }
 }

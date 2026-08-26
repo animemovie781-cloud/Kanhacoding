@@ -30,13 +30,13 @@ class SettingsViewModel @Inject constructor(
     fun checkConnection() {
         viewModelScope.launch {
             connectionStatus.value = "Checking..."
-            val currentSettings = settings.value
-            val models = aiApiService.fetchModels(currentSettings.baseUrl, currentSettings.apiKey)
-            if (models.isNotEmpty()) {
+            try {
+                val currentSettings = settings.value
+                val models = aiApiService.fetchModels(currentSettings.baseUrl, currentSettings.apiKey)
                 connectionStatus.value = "Success! Found ${models.size} models."
                 updateSettings { it.copy(availableModels = models) }
-            } else {
-                connectionStatus.value = "Failed to fetch models."
+            } catch (e: Exception) {
+                connectionStatus.value = "Failed: ${e.message}"
             }
         }
     }

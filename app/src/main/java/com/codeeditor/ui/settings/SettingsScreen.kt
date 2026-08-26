@@ -25,6 +25,10 @@ fun SettingsScreen(
     val settings by viewModel.settings.collectAsState()
     val scrollState = rememberScrollState()
 
+    var baseUrlText by remember(settings.baseUrl) { mutableStateOf(settings.baseUrl) }
+    var apiKeyText by remember(settings.apiKey) { mutableStateOf(settings.apiKey) }
+    var modelText by remember(settings.model) { mutableStateOf(settings.model) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,6 +56,8 @@ fun SettingsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = {
+                        baseUrlText = "http://localhost:20128/v1"
+                        modelText = "omniroute/auto"
                         viewModel.updateSettings {
                             it.copy(baseUrl = "http://localhost:20128/v1", model = "omniroute/auto")
                         }
@@ -63,9 +69,10 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("OmniRoute", fontSize = 11.sp)
                 }
-
                 Button(
                     onClick = {
+                        baseUrlText = "https://api.openai.com/v1"
+                        modelText = "gpt-4o-mini"
                         viewModel.updateSettings {
                             it.copy(baseUrl = "https://api.openai.com/v1", model = "gpt-4o-mini")
                         }
@@ -83,8 +90,11 @@ fun SettingsScreen(
             Text("AI GATEWAY CONFIG", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF9CA3AF))
 
             OutlinedTextField(
-                value = settings.baseUrl,
-                onValueChange = { newUrl -> viewModel.updateSettings { it.copy(baseUrl = newUrl) } },
+                value = baseUrlText,
+                onValueChange = { newUrl -> 
+                    baseUrlText = newUrl
+                    viewModel.updateSettings { it.copy(baseUrl = newUrl) } 
+                },
                 label = { Text("Base URL") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
@@ -109,16 +119,22 @@ fun SettingsScreen(
             }
 
             OutlinedTextField(
-                value = settings.apiKey,
-                onValueChange = { newKey -> viewModel.updateSettings { it.copy(apiKey = newKey) } },
+                value = apiKeyText,
+                onValueChange = { newKey -> 
+                    apiKeyText = newKey
+                    viewModel.updateSettings { it.copy(apiKey = newKey) } 
+                },
                 label = { Text("API Key (Optional for OmniRoute)") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
             )
 
             OutlinedTextField(
-                value = settings.model,
-                onValueChange = { newModel -> viewModel.updateSettings { it.copy(model = newModel) } },
+                value = modelText,
+                onValueChange = { newModel -> 
+                    modelText = newModel
+                    viewModel.updateSettings { it.copy(model = newModel) } 
+                },
                 label = { Text("Model Name") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)

@@ -1,0 +1,6 @@
+{
+  "name": "CodeEditor AI",
+  "description": "An AI-powered Android code editor with a built-in assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
